@@ -35,11 +35,16 @@ public class Receipt {
     }
 
     public BigDecimal getChange() {
-        BigDecimal totalOrderPrice = order.getItems()
+        BigDecimal totalOrderPrice = order.getLineItems()
                 .stream()
-                .map(Item::getPrice)
+                .map(LineItem::getOrderedPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return payment.subtract(totalOrderPrice);
+    }
+
+    @Override
+    public String toString() {
+        return "Receipt [id=" + id + ", Payment=" + payment + ", OrderId=" + order.getId() + "]";
     }
 }

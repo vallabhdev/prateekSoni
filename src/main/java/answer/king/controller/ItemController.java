@@ -28,7 +28,7 @@ public class ItemController {
     @RequestMapping(method = RequestMethod.POST)
     public Item create(@Valid @RequestBody Item item) {
         if (!itemValidator.validateItem(item)) {
-            throw new BadRequestException();
+            throw new BadRequestException("item information is not valid");
         }
         return itemService.save(item);
     }
@@ -36,7 +36,7 @@ public class ItemController {
     @RequestMapping(value = "/{id}/update", method = RequestMethod.PUT)
     public Item update(@PathVariable("id") Long id, @RequestBody BigDecimal price) {
         if (!itemValidator.validatePrice(price)) {
-            throw new BadRequestException();
+            throw new BadRequestException("price is not valid");
         }
         return itemService.update(id, price);
     }

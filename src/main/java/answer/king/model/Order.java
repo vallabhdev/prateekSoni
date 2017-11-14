@@ -15,7 +15,7 @@ public class Order {
 	private Boolean paid = false;
 
 	@OneToMany(mappedBy = "order", cascade = { CascadeType.ALL, CascadeType.PERSIST })
-	private List<Item> items;
+	private List<LineItem> lineItems;
 
 	@OneToOne(mappedBy = "order", cascade = { CascadeType.ALL, CascadeType.PERSIST })
 	private Receipt receipt;
@@ -36,12 +36,12 @@ public class Order {
 		this.paid = paid;
 	}
 
-	public List<Item> getItems() {
-		return items;
+	public List<LineItem> getLineItems() {
+		return lineItems;
 	}
 
-	public void setItems(List<Item> items) {
-		this.items = items;
+	public void setLineItems(List<LineItem> lineItems) {
+		this.lineItems = lineItems;
 	}
 
 	public Receipt getReceipt() {
@@ -50,5 +50,10 @@ public class Order {
 
 	public void setReceipt(Receipt receipt) {
 		this.receipt = receipt;
+	}
+
+	@Override
+	public String toString() {
+		return "Order [id=" + id + ", paid=" + paid + "]";
 	}
 }

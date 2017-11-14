@@ -1,6 +1,7 @@
 package answer.king.service;
 
 import answer.king.model.Item;
+import answer.king.model.LineItem;
 import answer.king.model.Order;
 import answer.king.model.Receipt;
 import answer.king.repo.ItemRepository;
@@ -17,9 +18,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
@@ -28,6 +29,7 @@ public class OrderServiceTest {
     private static final Long ITEM_ID = 2L;
     private static Order testOrder;
     private static Item testItem;
+    private static LineItem lineItem;
 
     @Mock
     private ItemRepository itemRepository;
@@ -43,12 +45,15 @@ public class OrderServiceTest {
         testOrder = new Order();
         testOrder.setId(ORDER_ID);
         testOrder.setPaid(false);
-        testOrder.setItems(new ArrayList<>());
+        testOrder.setLineItems(new ArrayList<>());
 
         testItem = new Item();
         testItem.setId(ITEM_ID);
         testItem.setPrice(new BigDecimal(50));
-        testItem.setOrder(testOrder);
+
+        lineItem = new LineItem();
+        lineItem.setOrder(testOrder);
+        lineItem.setItem(testItem);
     }
 
     @Test
@@ -77,6 +82,9 @@ public class OrderServiceTest {
         verify(orderRepository).findOne(ORDER_ID);
         verify(itemRepository).findOne(ITEM_ID);
         verify(orderRepository).save(testOrder);
+
+        assertThat(testOrder.getLineItems().get(0).getOrderedPrice().intValue(), is(50));
+        assertThat(testOrder.getLineItems().get(0).getQuantity(), is(1));
     }
 
     @Test
@@ -98,14 +106,15 @@ public class OrderServiceTest {
         Order order = new Order();
         order.setId(ORDER_ID);
         order.setPaid(false);
-        order.setItems(Arrays.asList(createItem(1L, "item1", 1000),
-                createItem(2L, "item2", 500)));
+        order.setLineItems(Arrays.asList(createLineItem(1L, "item1", 1000),
+                createLineItem(2L, "item2", 500)));
 
         when(orderRepository.findOne(ORDER_ID)).thenReturn(order);
 
         Receipt receipt = orderService.pay(ORDER_ID, payment);
 
         assertFalse(receipt.getOrder().getPaid());
+        verify(receiptRepository, never()).save(receipt);
     }
 
     @Test
@@ -120,11 +129,14 @@ public class OrderServiceTest {
         verify(receiptRepository).save(receipt);
     }
 
-    private Item createItem(Long id, String name, int price) {
+    private LineItem createLineItem(Long id, String name, int price) {
+        LineItem lineItem = new LineItem();
         Item i = new Item();
         i.setId(id);
         i.setName(name);
         i.setPrice(new BigDecimal(price));
-        return i;
+        lineItem.setItem(i);
+        lineItem.setOrderedPrice(i.getPrice());
+        return lineItem;
     }
 }

@@ -1,6 +1,7 @@
 package answer.king.service;
 
 import answer.king.model.Item;
+import answer.king.model.LineItem;
 import answer.king.model.Order;
 import answer.king.model.Receipt;
 import answer.king.repo.ItemRepository;
@@ -38,9 +39,13 @@ public class OrderService {
         Order order = orderRepository.findOne(id);
         Item item = itemRepository.findOne(itemId);
 
-        item.setOrder(order);
-        order.getItems().add(item);
+        LineItem lineItem = new LineItem();
+        lineItem.setItem(item);
+        lineItem.setOrder(order);
+        lineItem.setOrderedPrice(item.getPrice());
+        lineItem.setQuantity(1);
 
+        order.getLineItems().add(lineItem);
         orderRepository.save(order);
     }
 
@@ -52,6 +57,7 @@ public class OrderService {
         receipt.setOrder(order);
         if (receipt.getChange().intValue() >= 0) {
             order.setPaid(true);
+            order.getLineItems().forEach(lineItem -> lineItem.setOrderedPrice(lineItem.getItem().getPrice()));
             receiptRepository.save(receipt);
         }
         return receipt;

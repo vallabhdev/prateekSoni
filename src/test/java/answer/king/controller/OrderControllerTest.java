@@ -41,7 +41,7 @@ public class OrderControllerTest {
         assertTrue(orderController.getClass().getDeclaredMethod("getAll").isAnnotationPresent(RequestMapping.class));
         assertTrue(orderController.getClass().getDeclaredMethod("create").isAnnotationPresent(RequestMapping.class));
 
-        assertTrue(orderController.getClass().getDeclaredMethod("addItem", Long.class, Long.class)
+        assertTrue(orderController.getClass().getDeclaredMethod("addItem", Long.class, Long.class, int.class)
                 .isAnnotationPresent(RequestMapping.class));
 
         assertTrue(orderController.getClass().getDeclaredMethod("pay", Long.class, BigDecimal.class)
@@ -70,9 +70,9 @@ public class OrderControllerTest {
 
     @Test
     public void testAddItemService() {
-        orderController.addItem(ANY_ID, ITEM_ID);
+        orderController.addItem(ANY_ID, ITEM_ID, 1);
 
-        verify(orderService).addItem(ANY_ID, ITEM_ID);
+        verify(orderService).addItem(ANY_ID, ITEM_ID, 1);
     }
 
     @Test

@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 @Transactional
@@ -35,17 +37,17 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public void addItem(Long id, Long itemId) {
+    public void addItem(Long id, Long itemId, int quantity) {
         Order order = orderRepository.findOne(id);
         Item item = itemRepository.findOne(itemId);
 
-        LineItem lineItem = new LineItem();
-        lineItem.setItem(item);
-        lineItem.setOrder(order);
-        lineItem.setOrderedPrice(item.getPrice());
-        lineItem.setQuantity(1);
+        Predicate<LineItem> predicate = l -> l.getItem().getId().equals(itemId);
 
-        order.getLineItems().add(lineItem);
+        if (order.getLineItems().stream().anyMatch(predicate)) {
+            updateExistingLineItem(quantity, order, predicate);
+        } else {
+            createNewLineItem(quantity, order, item);
+        }
         orderRepository.save(order);
     }
 
@@ -61,5 +63,24 @@ public class OrderService {
             receiptRepository.save(receipt);
         }
         return receipt;
+    }
+
+    private void updateExistingLineItem(int quantity, Order order, Predicate<LineItem> predicate) {
+        Optional<LineItem> lineItem = order.getLineItems().stream().filter(predicate).findFirst();
+        if (lineItem.isPresent()) {
+            LineItem existingLineItem = lineItem.get();
+            int oldQuantity = existingLineItem.getQuantity();
+            existingLineItem.setQuantity(oldQuantity + quantity);
+        }
+    }
+
+    private void createNewLineItem(int quantity, Order order, Item item) {
+        LineItem lineItem = new LineItem();
+        lineItem.setItem(item);
+        lineItem.setOrder(order);
+        lineItem.setOrderedPrice(item.getPrice());
+        lineItem.setQuantity(quantity);
+
+        order.getLineItems().add(lineItem);
     }
 }

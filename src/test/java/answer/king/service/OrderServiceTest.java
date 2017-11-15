@@ -77,14 +77,14 @@ public class OrderServiceTest {
         when(orderRepository.findOne(ORDER_ID)).thenReturn(testOrder);
         when(itemRepository.findOne(ITEM_ID)).thenReturn(testItem);
 
-        orderService.addItem(ORDER_ID, ITEM_ID);
+        orderService.addItem(ORDER_ID, ITEM_ID, 2);
 
         verify(orderRepository).findOne(ORDER_ID);
         verify(itemRepository).findOne(ITEM_ID);
         verify(orderRepository).save(testOrder);
 
         assertThat(testOrder.getLineItems().get(0).getOrderedPrice().intValue(), is(50));
-        assertThat(testOrder.getLineItems().get(0).getQuantity(), is(1));
+        assertThat(testOrder.getLineItems().get(0).getQuantity(), is(2));
     }
 
     @Test
@@ -127,6 +127,18 @@ public class OrderServiceTest {
 
         assertTrue(receipt.getOrder().getPaid());
         verify(receiptRepository).save(receipt);
+    }
+
+    @Test
+    public void increaseQuantityWhenSameItemIsAdded() {
+        when(orderRepository.findOne(ORDER_ID)).thenReturn(testOrder);
+        when(itemRepository.findOne(ITEM_ID)).thenReturn(testItem);
+
+        orderService.addItem(ORDER_ID, ITEM_ID, 2);
+        orderService.addItem(ORDER_ID, ITEM_ID, 4);
+
+        assertThat(testOrder.getLineItems().get(0).getQuantity(), is(6));
+        assertThat(testOrder.getLineItems().size(), is(1));
     }
 
     private LineItem createLineItem(Long id, String name, int price) {

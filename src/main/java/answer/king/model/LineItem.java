@@ -10,11 +10,11 @@ public class LineItem {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ORDER_ID")
     private Order order;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ITEM_ID")
     private Item item;
 
@@ -66,6 +66,6 @@ public class LineItem {
     @Override
     public String toString() {
         return "LineItem [id=" + id + ", OrderedPrice=" + orderedPrice + ", OrderId=" + order.getId() +
-                ", ItemName=" + item.getName() + "]";
+                ", ItemName=" + item.getName() + ", Quantity=" + quantity + "]";
     }
 }

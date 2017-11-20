@@ -52,13 +52,8 @@ public class LineItem {
     }
 
     public BigDecimal getOrderedPrice() {
-        if (quantity == 0)
-            return new BigDecimal(0);
-        if (quantity == 1) {
-            return orderedPrice;
-        } else {
-            return orderedPrice.multiply(new BigDecimal(quantity));
-        }
+        return quantity == 0 ? new BigDecimal(0) :
+                quantity == 1 ? orderedPrice : orderedPrice.multiply(new BigDecimal(quantity));
     }
 
     public void setOrderedPrice(BigDecimal orderedPrice) {

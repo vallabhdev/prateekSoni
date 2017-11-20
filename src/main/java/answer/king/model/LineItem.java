@@ -52,7 +52,13 @@ public class LineItem {
     }
 
     public BigDecimal getOrderedPrice() {
-        return orderedPrice;
+        if (quantity == 0)
+            return new BigDecimal(0);
+        if (quantity == 1) {
+            return orderedPrice;
+        } else {
+            return orderedPrice.multiply(new BigDecimal(quantity));
+        }
     }
 
     public void setOrderedPrice(BigDecimal orderedPrice) {

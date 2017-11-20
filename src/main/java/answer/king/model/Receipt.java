@@ -14,6 +14,8 @@ public class Receipt {
 
     private BigDecimal payment;
 
+    private String remark;
+
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ORDER_ID")
@@ -35,6 +37,14 @@ public class Receipt {
         this.payment = payment;
     }
 
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
     public BigDecimal getChange() {
         BigDecimal totalOrderPrice = order.getLineItems()
                 .stream()
@@ -46,6 +56,6 @@ public class Receipt {
 
     @Override
     public String toString() {
-        return "Receipt [id=" + id + ", Payment=" + payment + ", OrderId=" + order.getId() + "]";
+        return "Receipt [id=" + id + ", Payment=" + payment + ", OrderId=" + order.getId() + ", Remark=" + remark + "]";
     }
 }

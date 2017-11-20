@@ -19,6 +19,8 @@ import java.util.function.Predicate;
 @Service
 @Transactional
 public class OrderService {
+    private static final String FAILURE_REMARK = "In-Sufficient funds to complete the payment";
+    private static final String SUCCESS_REMARK = "Payment completed";
 
     @Autowired
     private OrderRepository orderRepository;
@@ -60,8 +62,11 @@ public class OrderService {
         if (receipt.getChange().intValue() >= 0) {
             order.setPaid(true);
             order.getLineItems().forEach(lineItem -> lineItem.setOrderedPrice(lineItem.getItem().getPrice()));
+            receipt.setRemark(SUCCESS_REMARK);
             receiptRepository.save(receipt);
+            return receipt;
         }
+        receipt.setRemark(FAILURE_REMARK);
         return receipt;
     }
 

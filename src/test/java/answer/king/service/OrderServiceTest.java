@@ -83,7 +83,7 @@ public class OrderServiceTest {
         verify(itemRepository).findOne(ITEM_ID);
         verify(orderRepository).save(testOrder);
 
-        assertThat(testOrder.getLineItems().get(0).getOrderedPrice().intValue(), is(50));
+        assertThat(testOrder.getLineItems().get(0).getOrderedPrice().intValue(), is(100));
         assertThat(testOrder.getLineItems().get(0).getQuantity(), is(2));
     }
 
@@ -106,8 +106,8 @@ public class OrderServiceTest {
         Order order = new Order();
         order.setId(ORDER_ID);
         order.setPaid(false);
-        order.setLineItems(Arrays.asList(createLineItem(1L, "item1", 1000),
-                createLineItem(2L, "item2", 500)));
+        order.setLineItems(Arrays.asList(createLineItem(1L, "item1", 1000, 1),
+                createLineItem(2L, "item2", 500, 1)));
 
         when(orderRepository.findOne(ORDER_ID)).thenReturn(order);
 
@@ -115,6 +115,42 @@ public class OrderServiceTest {
 
         assertFalse(receipt.getOrder().getPaid());
         verify(receiptRepository, never()).save(receipt);
+    }
+
+    @Test
+    public void inSufficientPaymentForItemsWithMultipleQuantity() {
+        BigDecimal payment = new BigDecimal(1500);
+        Order order = new Order();
+        order.setId(ORDER_ID);
+        order.setPaid(false);
+        order.setLineItems(Arrays.asList(createLineItem(1L, "item1", 1000, 2),
+                createLineItem(2L, "item2", 500, 3)));
+
+        when(orderRepository.findOne(ORDER_ID)).thenReturn(order);
+
+        Receipt receipt = orderService.pay(ORDER_ID, payment);
+
+        assertFalse(receipt.getOrder().getPaid());
+        assertThat(receipt.getRemark(), is("In-Sufficient funds to complete the payment"));
+        verify(receiptRepository, never()).save(receipt);
+    }
+
+    @Test
+    public void paymentForItemsWithMultipleQuantity() {
+        BigDecimal payment = new BigDecimal(3500);
+        Order order = new Order();
+        order.setId(ORDER_ID);
+        order.setPaid(false);
+        order.setLineItems(Arrays.asList(createLineItem(1L, "item1", 1000, 2),
+                createLineItem(2L, "item2", 500, 3)));
+
+        when(orderRepository.findOne(ORDER_ID)).thenReturn(order);
+
+        Receipt receipt = orderService.pay(ORDER_ID, payment);
+
+        assertTrue(receipt.getOrder().getPaid());
+        assertThat(receipt.getRemark(), is("Payment completed"));
+        verify(receiptRepository).save(receipt);
     }
 
     @Test
@@ -141,7 +177,7 @@ public class OrderServiceTest {
         assertThat(testOrder.getLineItems().size(), is(1));
     }
 
-    private LineItem createLineItem(Long id, String name, int price) {
+    private LineItem createLineItem(Long id, String name, int price, int quantity) {
         LineItem lineItem = new LineItem();
         Item i = new Item();
         i.setId(id);
@@ -149,6 +185,7 @@ public class OrderServiceTest {
         i.setPrice(new BigDecimal(price));
         lineItem.setItem(i);
         lineItem.setOrderedPrice(i.getPrice());
+        lineItem.setQuantity(quantity);
         return lineItem;
     }
 }
